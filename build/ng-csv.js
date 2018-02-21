@@ -104,7 +104,7 @@ angular.module('ngCsv.services').
 
       var that = this;
       var csv = "";
-      var csvContent = "";
+      var csvContent = !options.sepHeader ? "" : "sep=" + options.fieldSep + EOL;
 
       var dataPromise = $q.when(data).then(function (responseData) {
         //responseData = angular.copy(responseData);//moved to row creation
@@ -135,8 +135,11 @@ angular.module('ngCsv.services').
             var labelArray, labelString;
 
             labelArray = [];
-            angular.forEach(arrData[0], function(value, label) {
-                this.push(that.stringifyField(label, options));
+
+            var iterator = !!options.columnOrder ? options.columnOrder : arrData[0];
+            angular.forEach(iterator, function(value, label) {
+                var val = !!options.columnOrder ? value : label;
+                this.push(that.stringifyField(val, options));
             }, labelArray);
             labelString = labelArray.join(options.fieldSep ? options.fieldSep : ",");
             csvContent += labelString + EOL;
@@ -221,7 +224,8 @@ angular.module('ngCsv.directives').
         addByteOrderMarker: "@addBom",
         ngClick: '&',
         charset: '@charset',
-        label: '&csvLabel'
+        label: '&csvLabel',
+        sepHeader: '&sepHeader'
       },
       controller: [
         '$scope',
@@ -253,6 +257,7 @@ angular.module('ngCsv.directives').
             if (angular.isDefined($attrs.csvHeader)) options.header = $scope.$eval($scope.header);
             if (angular.isDefined($attrs.csvColumnOrder)) options.columnOrder = $scope.$eval($scope.columnOrder);
             if (angular.isDefined($attrs.csvLabel)) options.label = $scope.$eval($scope.label);
+            if (angular.isDefined($attrs.sepHeader)) options.sepHeader = $scope.$eval($scope.sepHeader);
 
             options.fieldSep = $scope.fieldSep ? $scope.fieldSep : ",";
 
